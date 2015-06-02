@@ -1,0 +1,57 @@
+---
+name: Portico Estate 1.0
+description: ''
+keywords: apache, php, postgresql
+type: Default
+documentation: |-
+  Three layer docker implementation, currently in beta:
+  1) Applicaton: The php logic
+  2) Web server: Apache/php/xsl/xml/postgresql
+  3) Database: PostgreSQL 9.4
+
+  Database, uploads and configuration is stored as persistent volumes delivered from host.
+  Everything else within images.
+
+  The application is currently exported from the svn server at Savannah:
+  http://svn.savannah.nongnu.org/viewvc/branches/Version-1_0-branch/?root=fmsystem
+images:
+- name: postgres_94
+  source: postgres:latest
+  category: database
+  type: Default
+  expose:
+  - '5432'
+  ports:
+  - host_port: '5432'
+    container_port: '5432'
+    proto: TCP
+  environment:
+  - variable: POSTGRES_PASSWORD
+    value: changeme
+  volumes:
+  - host_path: "/var/lib/postgresql/data"
+    container_path: "/var/lib/postgresql/data"
+- name: sigurdne_portico_estate_application
+  source: sigurdne/portico_estate_application:latest
+  category: application
+  type: Default
+- name: sigurdne_portico_estate_webserver
+  source: sigurdne/portico_estate_webserver:latest
+  category: webserver
+  type: Default
+  expose:
+  - '80'
+  ports:
+  - host_port: '8080'
+    container_port: '80'
+    proto: TCP
+  links:
+  - service: postgres_94
+    alias: postgres_94
+  volumes:
+  - host_path: "/var/www/html/portico/header.inc.php"
+    container_path: "/var/www/html/portico/header.inc.php"
+  - host_path: "/var/files"
+    container_path: "/var/files"
+  volumes_from:
+  - service: sigurdne_portico_estate_application
