@@ -28,12 +28,15 @@ RUN apt-get install -y libapache2-mod-php8.1 \
 	php8.1-gd php8.1-imagick php8.1-imap php8.1-redis \
 	php8.1-soap php8.1-zip php8.1-mbstring php-pear \
 	libaio1 locales
-
 RUN apt-get install -y php8.1-mysql
 RUN apt-get install -y git
 RUN apt-get install -y less vim-tiny
 RUN apt-get install -y apg
 RUN apt-get install -y sudo
+
+# REDIS (php 8.2)
+# https://askubuntu.com/questions/1433463/php8-1-redis-module-for-ubuntu-20-04
+
 
 # MSSQL-support
 
