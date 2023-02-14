@@ -44,8 +44,11 @@ RUN ACCEPT_EULA=Y apt-get install -y msodbcsql17
 # optional: for bcp and sqlcmd
 RUN ACCEPT_EULA=Y apt-get install -y mssql-tools18
 
-RUN apt-get install -y unixodbc
-RUN apt-get install -y unixodbc-dev
+# Temorary workaround to install sqlsrv
+# https://stackoverflow.com/questions/75424070/docker-unixodbc-h-no-such-file-or-directory-pecl-install-sqlsrv-error-with-u
+RUN apt-get install unixodbc-dev=2.3.7 unixodbc=2.3.7 odbcinst1debian2=2.3.7 odbcinst=2.3.7
+# RUN apt-get install -y unixodbc
+# RUN apt-get install -y unixodbc-dev
 RUN pecl install sqlsrv
 RUN pecl install pdo_sqlsrv
 RUN printf "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.1/mods-available/sqlsrv.ini
