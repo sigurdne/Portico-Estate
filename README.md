@@ -6,3 +6,4 @@ php-support for:
 - MySQL
 - Mssql
 - Oracle
+- Redis
