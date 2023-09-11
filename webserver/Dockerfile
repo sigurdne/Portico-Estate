@@ -41,7 +41,8 @@ RUN apt-get install -y sudo
 # MSSQL-support
 
 #RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
-RUN wget -O- https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor > microsoft-keyring.gpg
+#RUN wget -O- https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor > microsoft-keyring.gpg
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc
 RUN curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list > /etc/apt/sources.list.d/mssql-release.list
 RUN apt-get update
 RUN ACCEPT_EULA=Y apt-get install -y msodbcsql17
