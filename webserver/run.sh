@@ -1,2 +1,2 @@
 #!/bin/bash
-exec supervisord -n
+exec supervisord -n -c /etc/supervisor/supervisord.conf
