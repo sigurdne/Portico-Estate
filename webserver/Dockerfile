@@ -14,7 +14,7 @@ RUN apt-get install -y software-properties-common
 #ENV LC_ALL en_US.UTF-8
 RUN add-apt-repository -y ppa:ondrej/php
 RUN add-apt-repository -y ppa:ondrej/apache2
-RUN apt-get update
+RUN apt-get update && apt-get install -y wkhtmltopdf
 RUN apt-get install -y software-properties-common
 RUN apt-get -y upgrade
 RUN apt-get install -y apt-utils
