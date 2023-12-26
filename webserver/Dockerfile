@@ -5,7 +5,7 @@
 FROM ubuntu:22.04
 LABEL maintainer="Sigurd Nes <sigurdne@online.no>"
 
-# php8.2
+# php8.3
 
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 RUN apt-get update
@@ -21,20 +21,20 @@ RUN apt-get install -y apt-utils
 RUN apt-get install -y supervisor
 RUN apt-get install -y apache2
 RUN apt-get install -y mysql-client-core-8.0
-RUN apt-get install -y libapache2-mod-php8.2 \
-	php8.2 php8.2-curl php8.2-intl \
-	php8.2-xdebug php8.2-apcu php8.2-dev \
-	php8.2-xsl php8.2-sybase php8.2-pgsql \
-	php8.2-gd php8.2-imagick php8.2-imap php8.2-redis \
-	php8.2-soap php8.2-zip php8.2-mbstring php-pear \
+RUN apt-get install -y libapache2-mod-php8.3 \
+	php8.3 php8.3-curl php8.3-intl \
+	php8.3-xdebug php8.3-apcu php8.3-dev \
+	php8.3-xsl php8.3-sybase php8.3-pgsql \
+	php8.3-gd php8.3-imagick php8.3-imap php8.3-redis \
+	php8.3-soap php8.3-zip php8.3-mbstring php-pear \
 	libaio1 locales
-RUN apt-get install -y php8.2-mysql
+RUN apt-get install -y php8.3-mysql
 RUN apt-get install -y git
 RUN apt-get install -y less vim-tiny
 RUN apt-get install -y apg
 RUN apt-get install -y sudo
 
-# REDIS (php 8.2)
+# REDIS (php 8.3)
 # https://askubuntu.com/questions/1433463/php8-1-redis-module-for-ubuntu-20-04
 
 
@@ -54,9 +54,9 @@ RUN apt-get install -y unixodbc
 RUN apt-get install -y unixodbc-dev
 RUN pecl install sqlsrv
 RUN pecl install pdo_sqlsrv
-RUN printf "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.2/mods-available/sqlsrv.ini
-RUN printf "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/8.2/mods-available/pdo_sqlsrv.ini
-RUN phpenmod -v 8.2 sqlsrv pdo_sqlsrv
+RUN printf "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.3/mods-available/sqlsrv.ini
+RUN printf "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/8.3/mods-available/pdo_sqlsrv.ini
+RUN phpenmod -v 8.3 sqlsrv pdo_sqlsrv
 
 RUN locale-gen --purge en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
@@ -87,8 +87,8 @@ RUN a2ensite default-ssl.conf
 ENV PHP_INI ""
 ENV XDEBUG_REMOTE_PORT ""
 #
-ADD php8/app.ini /etc/php/8.2/apache2/conf.d/91-app.ini
-ADD php8/app.ini /etc/php/8.2/cli/conf.d/91-app.ini
+ADD php8/app.ini /etc/php/8.3/apache2/conf.d/91-app.ini
+ADD php8/app.ini /etc/php/8.3/cli/conf.d/91-app.ini
 
 
 # Add image configuration and scripts
