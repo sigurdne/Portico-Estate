@@ -24,7 +24,7 @@ RUN apt-get install -y mysql-client-core-8.0
 RUN apt-get install -y libapache2-mod-php8.3 \
 	php8.3 php8.3-curl php8.3-intl \
 	php8.3-xdebug php8.3-apcu php8.3-dev \
-	php8.3-xsl php8.3-sybase php8.3-pgsql \
+	php8.3-xsl php8.3-sybase php8.3-pgsql php8.3-sqlite3 \
 	php8.3-gd php8.3-imagick php8.3-imap php8.3-redis \
 	php8.3-soap php8.3-zip php8.3-mbstring php-pear \
 	libaio1 locales
