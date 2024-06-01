@@ -1,69 +1,47 @@
-#
-# Apache/php-server with xsl, postgres, mysql, mssql
-#
+FROM php:8-apache
 
-FROM ubuntu:22.04
-LABEL maintainer="Sigurd Nes <sigurdne@online.no>"
+LABEL maintainer="Sigurd Nes <sigurdne@gmail.com>"
 
-# php8.3
+# Install necessary packages
+RUN apt-get update  && apt-get install -y software-properties-common \
+     apt-utils libcurl4-openssl-dev libicu-dev libxslt-dev libpq-dev zlib1g-dev libpng-dev libc-client-dev libkrb5-dev libzip-dev libonig-dev \
+     supervisor \ 
+     git \
+     less vim-tiny \
+     apg \
+     sudo \
+     libaio1 locales wget
 
-RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-RUN apt-get update
-RUN apt-get install -y software-properties-common
-#RUN apt-get install -y language-pack-en-base
-#ENV LC_ALL en_US.UTF-8
-RUN add-apt-repository -y ppa:ondrej/php
-RUN add-apt-repository -y ppa:ondrej/apache2
-RUN apt-get update && apt-get install -y wkhtmltopdf
-RUN apt-get install -y software-properties-common
-RUN apt-get -y upgrade
-RUN apt-get install -y apt-utils
-RUN apt-get install -y supervisor
-RUN apt-get install -y apache2
-RUN apt-get install -y mysql-client-core-8.0
-RUN apt-get install -y libapache2-mod-php8.3 \
-	php8.3 php8.3-curl php8.3-intl \
-	php8.3-xdebug php8.3-apcu php8.3-dev \
-	php8.3-xsl php8.3-sybase php8.3-pgsql php8.3-sqlite3 \
-	php8.3-gd php8.3-imagick php8.3-imap php8.3-redis \
-	php8.3-soap php8.3-zip php8.3-mbstring php-pear \
-	libaio1 locales
-RUN apt-get install -y php8.3-mysql
-RUN apt-get install -y git
-RUN apt-get install -y less vim-tiny
-RUN apt-get install -y apg
-RUN apt-get install -y sudo
+# Install PHP extensions
+RUN docker-php-ext-configure imap --with-kerberos --with-imap-ssl \
+    && docker-php-ext-install curl intl xsl pdo_pgsql pdo_mysql gd imap soap zip mbstring
 
-# REDIS (php 8.3)
-# https://askubuntu.com/questions/1433463/php8-1-redis-module-for-ubuntu-20-04
-
+# Install PECL extensions
+RUN pecl install xdebug apcu && docker-php-ext-enable xdebug apcu
 
 # MSSQL-support
-
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc
-RUN curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list > /etc/apt/sources.list.d/mssql-release.list
+RUN wget -qO - https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /etc/apt/trusted.gpg.d/microsoft.asc.gpg
+RUN echo "deb [arch=amd64] https://packages.microsoft.com/debian/$(cat /etc/debian_version | cut -d. -f1)/prod $(lsb_release -cs) main" > /etc/apt/sources.list.d/mssql-release.list
 RUN apt-get update
+
 RUN ACCEPT_EULA=Y apt-get install -y msodbcsql17
 # optional: for bcp and sqlcmd
 RUN ACCEPT_EULA=Y apt-get install -y mssql-tools18
 
-# Temorary workaround to install sqlsrv
-# https://stackoverflow.com/questions/75424070/docker-unixodbc-h-no-such-file-or-directory-pecl-install-sqlsrv-error-with-u
-# RUN apt-get install unixodbc-dev=2.3.7 unixodbc=2.3.7 odbcinst1debian2=2.3.7 odbcinst=2.3.7
+# Install sqlsrv
 RUN apt-get install -y unixodbc
 RUN apt-get install -y unixodbc-dev
 RUN pecl install sqlsrv
 RUN pecl install pdo_sqlsrv
-RUN printf "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.3/mods-available/sqlsrv.ini
-RUN printf "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/8.3/mods-available/pdo_sqlsrv.ini
-RUN phpenmod -v 8.3 sqlsrv pdo_sqlsrv
+RUN docker-php-ext-enable sqlsrv pdo_sqlsrv
 
+# Configure locales
 RUN locale-gen --purge en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US.UTF-8
 
-# Supervisor #
+# Supervisor
 RUN mkdir -p /var/log/supervisor
 ADD supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
@@ -73,36 +51,32 @@ ENV APACHE_RUN_GROUP www-data
 ENV APACHE_LOG_DIR /var/log/apache2
 ENV APP_DOCUMENT_ROOT /var/www/html
 
-
 EXPOSE 80
 EXPOSE 443
+
+RUN apt-get update && apt-get install -y ssl-cert
 
 RUN a2enmod rewrite
 RUN a2enmod headers
 RUN a2enmod ssl
 RUN a2ensite default-ssl.conf
 
-
 # PHP
 ENV PHP_INI ""
 ENV XDEBUG_REMOTE_PORT ""
-#
-ADD php8/app.ini /etc/php/8.3/apache2/conf.d/91-app.ini
-ADD php8/app.ini /etc/php/8.3/cli/conf.d/91-app.ini
-
+ADD php8/app.ini /usr/local/etc/php/conf.d/91-app.ini
+#ADD php8/app.ini /etc/php/8.0/cli/conf.d/91-app.ini
 
 # Add image configuration and scripts
 ADD start.sh /start.sh
 ADD run.sh /run.sh
 RUN chmod 755 /*.sh
 
-
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Others
 ENV HOME /root
 WORKDIR /root
-
 
 # Command on startup
 CMD ["/run.sh"]
